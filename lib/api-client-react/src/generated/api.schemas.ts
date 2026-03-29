@@ -8,3 +8,192 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface OpenaiConversation {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+export interface OpenaiMessage {
+  id: number;
+  conversationId: number;
+  role: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface CreateOpenaiConversationBody {
+  title: string;
+}
+
+export interface SendOpenaiMessageBody {
+  content: string;
+}
+
+export interface OpenaiConversationWithMessages {
+  id: number;
+  title: string;
+  createdAt: string;
+  messages: OpenaiMessage[];
+}
+
+export interface OpenaiError {
+  error: string;
+}
+
+export interface Alert {
+  id: number;
+  stockSymbol: string;
+  stockName: string;
+  alertType: string;
+  priority: string;
+  compositeScore: number;
+  headline: string;
+  explanation: string;
+  evidencePoints: string[];
+  entryPrice?: number;
+  targetPrice?: number;
+  stopLoss?: number;
+  volumeSpike?: number;
+  patternSuccessRate?: number;
+  sentimentScore?: number;
+  sector: string;
+  priceChange: number;
+  priceChangePercent: number;
+  userFeedback?: string | null;
+  createdAt: string;
+}
+
+export type AlertFeedbackBodyFeedback =
+  (typeof AlertFeedbackBodyFeedback)[keyof typeof AlertFeedbackBodyFeedback];
+
+export const AlertFeedbackBodyFeedback = {
+  useful: "useful",
+  not_useful: "not_useful",
+  acted_on: "acted_on",
+} as const;
+
+export interface AlertFeedbackBody {
+  feedback: AlertFeedbackBodyFeedback;
+}
+
+export interface Stock {
+  symbol: string;
+  name: string;
+  sector: string;
+  marketCap: string;
+  currentPrice: number;
+  priceChange: number;
+  priceChangePercent: number;
+  volume: number;
+  avgVolume: number;
+  rsi: number;
+  hasAlert: boolean;
+}
+
+export interface PatternDetection {
+  id: number;
+  patternType: string;
+  patternSubtype?: string;
+  confidence: number;
+  historicalSuccessRate: number;
+  occurrences: number;
+  entryPrice: number;
+  targetPrice: number;
+  stopLoss: number;
+  timeframe: string;
+  status: string;
+  detectedAt: string;
+}
+
+export interface PricePoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface StockDetail {
+  symbol: string;
+  name: string;
+  sector: string;
+  marketCap: string;
+  currentPrice: number;
+  priceChange: number;
+  priceChangePercent: number;
+  volume: number;
+  avgVolume: number;
+  rsi: number;
+  macd?: number;
+  macdSignal?: number;
+  bollingerUpper?: number;
+  bollingerLower?: number;
+  patterns: PatternDetection[];
+  alerts: Alert[];
+  priceHistory: PricePoint[];
+}
+
+export interface Holding {
+  id: number;
+  symbol: string;
+  name: string;
+  sector: string;
+  quantity: number;
+  avgPrice: number;
+  currentPrice: number;
+  currentValue: number;
+  gainLoss: number;
+  gainLossPercent: number;
+}
+
+export interface Portfolio {
+  totalValue: number;
+  dayChange: number;
+  dayChangePercent: number;
+  healthScore: number;
+  riskProfile: string;
+  holdings: Holding[];
+}
+
+export interface AddHoldingBody {
+  symbol: string;
+  quantity: number;
+  avgPrice: number;
+}
+
+export interface SectorPerformance {
+  name: string;
+  change: number;
+  direction: string;
+}
+
+export interface MarketSummary {
+  nifty50: number;
+  nifty50Change: number;
+  nifty50ChangePercent: number;
+  sensex: number;
+  sensexChange: number;
+  sensexChangePercent: number;
+  advanceDecline: string;
+  marketStatus: string;
+  totalAlerts: number;
+  strongAlerts: number;
+  topSectors: SectorPerformance[];
+}
+
+export interface ApiError {
+  error: string;
+}
+
+export type ListAlertsParams = {
+  category?: string;
+  priority?: string;
+};
+
+export type ListStocksParams = {
+  sector?: string;
+  q?: string;
+};

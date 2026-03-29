@@ -10,6 +10,14 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: openai
+    description: OpenAI AI chat, image, and audio operations
+  - name: alerts
+    description: SmartStreet AI market alerts
+  - name: stocks
+    description: Stock data and patterns
+  - name: portfolio
+    description: User portfolio management
 paths:
   /healthz:
     get:
@@ -24,6 +32,287 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /openai/conversations:
+    get:
+      operationId: listOpenaiConversations
+      tags: [openai]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiConversation"
+    post:
+      operationId: createOpenaiConversation
+      tags: [openai]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOpenaiConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversation"
+
+  /openai/conversations/{id}:
+    get:
+      operationId: getOpenaiConversation
+      tags: [openai]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+    delete:
+      operationId: deleteOpenaiConversation
+      tags: [openai]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+
+  /openai/conversations/{id}/messages:
+    get:
+      operationId: listOpenaiMessages
+      tags: [openai]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiMessage"
+    post:
+      operationId: sendOpenaiMessage
+      tags: [openai]
+      summary: Send a text message and receive a streaming text response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOpenaiMessageBody"
+      responses:
+        "200":
+          description: SSE stream of assistant text chunks
+          content:
+            text/event-stream: {}
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List all market alerts
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}/feedback:
+    post:
+      operationId: submitAlertFeedback
+      tags: [alerts]
+      summary: Submit feedback for an alert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertFeedbackBody"
+      responses:
+        "200":
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /stocks:
+    get:
+      operationId: listStocks
+      tags: [stocks]
+      summary: List stocks with latest data
+      parameters:
+        - name: sector
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of stocks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Stock"
+
+  /stocks/{symbol}:
+    get:
+      operationId: getStock
+      tags: [stocks]
+      summary: Get stock details with patterns
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Stock with pattern details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /portfolio:
+    get:
+      operationId: getPortfolio
+      tags: [portfolio]
+      summary: Get user portfolio
+      responses:
+        "200":
+          description: Portfolio data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+
+  /portfolio/holdings:
+    post:
+      operationId: addHolding
+      tags: [portfolio]
+      summary: Add a holding to portfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddHoldingBody"
+      responses:
+        "201":
+          description: Holding added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holding"
+
+  /portfolio/holdings/{id}:
+    delete:
+      operationId: removeHolding
+      tags: [portfolio]
+      summary: Remove a holding from portfolio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  /market-summary:
+    get:
+      operationId: getMarketSummary
+      tags: [stocks]
+      summary: Get overall market summary
+      responses:
+        "200":
+          description: Market summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +323,449 @@ components:
       required:
         - status
 
+    OpenaiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+
+    OpenaiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+
+    CreateOpenaiConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+
+    SendOpenaiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    OpenaiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenaiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+
+    OpenaiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        stockSymbol:
+          type: string
+        stockName:
+          type: string
+        alertType:
+          type: string
+        priority:
+          type: string
+        compositeScore:
+          type: number
+        headline:
+          type: string
+        explanation:
+          type: string
+        evidencePoints:
+          type: array
+          items:
+            type: string
+        entryPrice:
+          type: number
+        targetPrice:
+          type: number
+        stopLoss:
+          type: number
+        volumeSpike:
+          type: number
+        patternSuccessRate:
+          type: number
+        sentimentScore:
+          type: number
+        sector:
+          type: string
+        priceChange:
+          type: number
+        priceChangePercent:
+          type: number
+        userFeedback:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - stockSymbol
+        - stockName
+        - alertType
+        - priority
+        - compositeScore
+        - headline
+        - explanation
+        - evidencePoints
+        - sector
+        - priceChange
+        - priceChangePercent
+        - createdAt
+
+    AlertFeedbackBody:
+      type: object
+      properties:
+        feedback:
+          type: string
+          enum: [useful, not_useful, acted_on]
+      required:
+        - feedback
+
+    Stock:
+      type: object
+      properties:
+        symbol:
+          type: string
+        name:
+          type: string
+        sector:
+          type: string
+        marketCap:
+          type: string
+        currentPrice:
+          type: number
+        priceChange:
+          type: number
+        priceChangePercent:
+          type: number
+        volume:
+          type: number
+        avgVolume:
+          type: number
+        rsi:
+          type: number
+        hasAlert:
+          type: boolean
+      required:
+        - symbol
+        - name
+        - sector
+        - marketCap
+        - currentPrice
+        - priceChange
+        - priceChangePercent
+        - volume
+        - avgVolume
+        - rsi
+        - hasAlert
+
+    StockDetail:
+      type: object
+      properties:
+        symbol:
+          type: string
+        name:
+          type: string
+        sector:
+          type: string
+        marketCap:
+          type: string
+        currentPrice:
+          type: number
+        priceChange:
+          type: number
+        priceChangePercent:
+          type: number
+        volume:
+          type: number
+        avgVolume:
+          type: number
+        rsi:
+          type: number
+        macd:
+          type: number
+        macdSignal:
+          type: number
+        bollingerUpper:
+          type: number
+        bollingerLower:
+          type: number
+        patterns:
+          type: array
+          items:
+            $ref: "#/components/schemas/PatternDetection"
+        alerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Alert"
+        priceHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricePoint"
+      required:
+        - symbol
+        - name
+        - sector
+        - marketCap
+        - currentPrice
+        - priceChange
+        - priceChangePercent
+        - volume
+        - avgVolume
+        - rsi
+        - patterns
+        - alerts
+        - priceHistory
+
+    PatternDetection:
+      type: object
+      properties:
+        id:
+          type: integer
+        patternType:
+          type: string
+        patternSubtype:
+          type: string
+        confidence:
+          type: number
+        historicalSuccessRate:
+          type: number
+        occurrences:
+          type: integer
+        entryPrice:
+          type: number
+        targetPrice:
+          type: number
+        stopLoss:
+          type: number
+        timeframe:
+          type: string
+        status:
+          type: string
+        detectedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - patternType
+        - confidence
+        - historicalSuccessRate
+        - occurrences
+        - entryPrice
+        - targetPrice
+        - stopLoss
+        - timeframe
+        - status
+        - detectedAt
+
+    PricePoint:
+      type: object
+      properties:
+        date:
+          type: string
+        open:
+          type: number
+        high:
+          type: number
+        low:
+          type: number
+        close:
+          type: number
+        volume:
+          type: number
+      required:
+        - date
+        - open
+        - high
+        - low
+        - close
+        - volume
+
+    Portfolio:
+      type: object
+      properties:
+        totalValue:
+          type: number
+        dayChange:
+          type: number
+        dayChangePercent:
+          type: number
+        healthScore:
+          type: integer
+        riskProfile:
+          type: string
+        holdings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Holding"
+      required:
+        - totalValue
+        - dayChange
+        - dayChangePercent
+        - healthScore
+        - riskProfile
+        - holdings
+
+    Holding:
+      type: object
+      properties:
+        id:
+          type: integer
+        symbol:
+          type: string
+        name:
+          type: string
+        sector:
+          type: string
+        quantity:
+          type: number
+        avgPrice:
+          type: number
+        currentPrice:
+          type: number
+        currentValue:
+          type: number
+        gainLoss:
+          type: number
+        gainLossPercent:
+          type: number
+      required:
+        - id
+        - symbol
+        - name
+        - sector
+        - quantity
+        - avgPrice
+        - currentPrice
+        - currentValue
+        - gainLoss
+        - gainLossPercent
+
+    AddHoldingBody:
+      type: object
+      properties:
+        symbol:
+          type: string
+        quantity:
+          type: number
+        avgPrice:
+          type: number
+      required:
+        - symbol
+        - quantity
+        - avgPrice
+
+    MarketSummary:
+      type: object
+      properties:
+        nifty50:
+          type: number
+        nifty50Change:
+          type: number
+        nifty50ChangePercent:
+          type: number
+        sensex:
+          type: number
+        sensexChange:
+          type: number
+        sensexChangePercent:
+          type: number
+        advanceDecline:
+          type: string
+        marketStatus:
+          type: string
+        totalAlerts:
+          type: integer
+        strongAlerts:
+          type: integer
+        topSectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/SectorPerformance"
+      required:
+        - nifty50
+        - nifty50Change
+        - nifty50ChangePercent
+        - sensex
+        - sensexChange
+        - sensexChangePercent
+        - advanceDecline
+        - marketStatus
+        - totalAlerts
+        - strongAlerts
+        - topSectors
+
+    SectorPerformance:
+      type: object
+      properties:
+        name:
+          type: string
+        change:
+          type: number
+        direction:
+          type: string
+      required:
+        - name
+        - change
+        - direction
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

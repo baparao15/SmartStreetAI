@@ -14,3 +14,307 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all conversations
+ */
+export const ListOpenaiConversationsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListOpenaiConversationsResponse = zod.array(
+  ListOpenaiConversationsResponseItem,
+);
+
+/**
+ * @summary Create a new conversation
+ */
+export const CreateOpenaiConversationBody = zod.object({
+  title: zod.string(),
+});
+
+/**
+ * @summary Get conversation with messages
+ */
+export const GetOpenaiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetOpenaiConversationResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  messages: zod.array(
+    zod.object({
+      id: zod.number(),
+      conversationId: zod.number(),
+      role: zod.string(),
+      content: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete a conversation
+ */
+export const DeleteOpenaiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List messages in a conversation
+ */
+export const ListOpenaiMessagesParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListOpenaiMessagesResponseItem = zod.object({
+  id: zod.number(),
+  conversationId: zod.number(),
+  role: zod.string(),
+  content: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListOpenaiMessagesResponse = zod.array(
+  ListOpenaiMessagesResponseItem,
+);
+
+/**
+ * @summary Send a text message and receive a streaming text response
+ */
+export const SendOpenaiMessageParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SendOpenaiMessageBody = zod.object({
+  content: zod.string(),
+});
+
+/**
+ * @summary List all market alerts
+ */
+export const ListAlertsQueryParams = zod.object({
+  category: zod.coerce.string().optional(),
+  priority: zod.coerce.string().optional(),
+});
+
+export const ListAlertsResponseItem = zod.object({
+  id: zod.number(),
+  stockSymbol: zod.string(),
+  stockName: zod.string(),
+  alertType: zod.string(),
+  priority: zod.string(),
+  compositeScore: zod.number(),
+  headline: zod.string(),
+  explanation: zod.string(),
+  evidencePoints: zod.array(zod.string()),
+  entryPrice: zod.number().optional(),
+  targetPrice: zod.number().optional(),
+  stopLoss: zod.number().optional(),
+  volumeSpike: zod.number().optional(),
+  patternSuccessRate: zod.number().optional(),
+  sentimentScore: zod.number().optional(),
+  sector: zod.string(),
+  priceChange: zod.number(),
+  priceChangePercent: zod.number(),
+  userFeedback: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListAlertsResponse = zod.array(ListAlertsResponseItem);
+
+/**
+ * @summary Submit feedback for an alert
+ */
+export const SubmitAlertFeedbackParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SubmitAlertFeedbackBody = zod.object({
+  feedback: zod.enum(["useful", "not_useful", "acted_on"]),
+});
+
+export const SubmitAlertFeedbackResponse = zod.object({
+  id: zod.number(),
+  stockSymbol: zod.string(),
+  stockName: zod.string(),
+  alertType: zod.string(),
+  priority: zod.string(),
+  compositeScore: zod.number(),
+  headline: zod.string(),
+  explanation: zod.string(),
+  evidencePoints: zod.array(zod.string()),
+  entryPrice: zod.number().optional(),
+  targetPrice: zod.number().optional(),
+  stopLoss: zod.number().optional(),
+  volumeSpike: zod.number().optional(),
+  patternSuccessRate: zod.number().optional(),
+  sentimentScore: zod.number().optional(),
+  sector: zod.string(),
+  priceChange: zod.number(),
+  priceChangePercent: zod.number(),
+  userFeedback: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List stocks with latest data
+ */
+export const ListStocksQueryParams = zod.object({
+  sector: zod.coerce.string().optional(),
+  q: zod.coerce.string().optional(),
+});
+
+export const ListStocksResponseItem = zod.object({
+  symbol: zod.string(),
+  name: zod.string(),
+  sector: zod.string(),
+  marketCap: zod.string(),
+  currentPrice: zod.number(),
+  priceChange: zod.number(),
+  priceChangePercent: zod.number(),
+  volume: zod.number(),
+  avgVolume: zod.number(),
+  rsi: zod.number(),
+  hasAlert: zod.boolean(),
+});
+export const ListStocksResponse = zod.array(ListStocksResponseItem);
+
+/**
+ * @summary Get stock details with patterns
+ */
+export const GetStockParams = zod.object({
+  symbol: zod.coerce.string(),
+});
+
+export const GetStockResponse = zod.object({
+  symbol: zod.string(),
+  name: zod.string(),
+  sector: zod.string(),
+  marketCap: zod.string(),
+  currentPrice: zod.number(),
+  priceChange: zod.number(),
+  priceChangePercent: zod.number(),
+  volume: zod.number(),
+  avgVolume: zod.number(),
+  rsi: zod.number(),
+  macd: zod.number().optional(),
+  macdSignal: zod.number().optional(),
+  bollingerUpper: zod.number().optional(),
+  bollingerLower: zod.number().optional(),
+  patterns: zod.array(
+    zod.object({
+      id: zod.number(),
+      patternType: zod.string(),
+      patternSubtype: zod.string().optional(),
+      confidence: zod.number(),
+      historicalSuccessRate: zod.number(),
+      occurrences: zod.number(),
+      entryPrice: zod.number(),
+      targetPrice: zod.number(),
+      stopLoss: zod.number(),
+      timeframe: zod.string(),
+      status: zod.string(),
+      detectedAt: zod.coerce.date(),
+    }),
+  ),
+  alerts: zod.array(
+    zod.object({
+      id: zod.number(),
+      stockSymbol: zod.string(),
+      stockName: zod.string(),
+      alertType: zod.string(),
+      priority: zod.string(),
+      compositeScore: zod.number(),
+      headline: zod.string(),
+      explanation: zod.string(),
+      evidencePoints: zod.array(zod.string()),
+      entryPrice: zod.number().optional(),
+      targetPrice: zod.number().optional(),
+      stopLoss: zod.number().optional(),
+      volumeSpike: zod.number().optional(),
+      patternSuccessRate: zod.number().optional(),
+      sentimentScore: zod.number().optional(),
+      sector: zod.string(),
+      priceChange: zod.number(),
+      priceChangePercent: zod.number(),
+      userFeedback: zod.string().nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  priceHistory: zod.array(
+    zod.object({
+      date: zod.string(),
+      open: zod.number(),
+      high: zod.number(),
+      low: zod.number(),
+      close: zod.number(),
+      volume: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get user portfolio
+ */
+export const GetPortfolioResponse = zod.object({
+  totalValue: zod.number(),
+  dayChange: zod.number(),
+  dayChangePercent: zod.number(),
+  healthScore: zod.number(),
+  riskProfile: zod.string(),
+  holdings: zod.array(
+    zod.object({
+      id: zod.number(),
+      symbol: zod.string(),
+      name: zod.string(),
+      sector: zod.string(),
+      quantity: zod.number(),
+      avgPrice: zod.number(),
+      currentPrice: zod.number(),
+      currentValue: zod.number(),
+      gainLoss: zod.number(),
+      gainLossPercent: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Add a holding to portfolio
+ */
+export const AddHoldingBody = zod.object({
+  symbol: zod.string(),
+  quantity: zod.number(),
+  avgPrice: zod.number(),
+});
+
+/**
+ * @summary Remove a holding from portfolio
+ */
+export const RemoveHoldingParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get overall market summary
+ */
+export const GetMarketSummaryResponse = zod.object({
+  nifty50: zod.number(),
+  nifty50Change: zod.number(),
+  nifty50ChangePercent: zod.number(),
+  sensex: zod.number(),
+  sensexChange: zod.number(),
+  sensexChangePercent: zod.number(),
+  advanceDecline: zod.string(),
+  marketStatus: zod.string(),
+  totalAlerts: zod.number(),
+  strongAlerts: zod.number(),
+  topSectors: zod.array(
+    zod.object({
+      name: zod.string(),
+      change: zod.number(),
+      direction: zod.string(),
+    }),
+  ),
+});

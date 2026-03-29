@@ -1,0 +1,17 @@
+packages:
+  "recharts": "For rendering beautiful financial charts (price history, portfolio performance)"
+  "framer-motion": "For smooth layout transitions and micro-interactions"
+  "date-fns": "For formatting dates in charts and alerts"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes without style conflicts"
+  "@hookform/resolvers": "Zod validation for portfolio holding form"
+  "react-hook-form": "Form state management"
+
+images:
+  - path: "artifacts/smartstreet/public/images/logo-mark.png"
+    description: "A minimalist, premium logo mark for a fintech app named SmartStreet. Deep dark background, glowing neon blue and emerald green geometric shapes resembling an upward trend or a stylized 'S'."
+    aspect_ratio: "1:1"
+
+notes:
+  - "Using provided `@workspace/api-client-react` for standard REST hooks."
+  - "Implementing custom fetch logic for SSE streaming on `/api/openai/conversations/:id/messages`."

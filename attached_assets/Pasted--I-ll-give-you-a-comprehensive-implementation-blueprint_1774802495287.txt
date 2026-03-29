@@ -1,0 +1,727 @@
+ I'll give you a comprehensive implementation blueprint without code. This is your complete roadmap to build the AI for Indian Investors prototype.
+
+---
+
+# 📋 DETAILED IMPLEMENTATION BLUEPRINT
+
+## 🎯 PROJECT SCOPE: "SmartStreet AI" - Retail Investor Intelligence Platform
+
+---
+
+## SECTION 1: SYSTEM ARCHITECTURE
+
+### 1.1 Multi-Agent System Design
+
+| Agent Name | Core Responsibility | Input Sources | Output Deliverables |
+|------------|-------------------|---------------|-------------------|
+| **Data Ingestion Agent** | Collect raw market data | NSE filings, price feeds, news APIs | Structured events, cleaned price data |
+| **Pattern Recognition Agent** | Detect technical patterns | OHLCV data, historical patterns | Pattern alerts with confidence scores |
+| **Signal Synthesis Agent** | Combine multiple signals | Filing events + pattern alerts + sentiment | Ranked opportunity alerts |
+| **Explanation Agent** | Generate human-readable insights | Raw signals, user profile, market context | Plain-English recommendations |
+| **Portfolio Context Agent** | Personalize for user holdings | User portfolio, risk profile, goals | Filtered, relevant alerts only |
+| **Feedback Loop Agent** | Learn from outcomes | Alert → Action → Result tracking | Improved signal ranking over time |
+
+### 1.2 Data Flow Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           DATA LAYER                                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
+│  │ NSE Bhavcopy│  │ Corporate   │  │ News/Rumors │  │ Economic        │ │
+│  │ (EOD Data)  │  │ Filings     │  │ Scrapers    │  │ Indicators      │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘ │
+│         └─────────────────┴─────────────────┴─────────────────┘      │
+│                                    │                                    │
+│                                    ▼                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    UNIFIED DATA PIPELINE                         │   │
+│  │  • Normalization • Deduplication • Time-series alignment         │   │
+│  │  • Event tagging • Sentiment scoring • Entity extraction         │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+└────────────────────────────────────┼────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         AGENT ORCHESTRATION LAYER                        │
+│                                                                          │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│  │   PATTERN    │◄──►│   SIGNAL     │◄──►│ EXPLANATION  │             │
+│  │   DETECTOR   │    │ SYNTHESIZER  │    │    ENGINE    │             │
+│  └──────────────┘    └──────┬───────┘    └──────────────┘             │
+│                              │                                          │
+│                              ▼                                          │
+│                    ┌─────────────────┐                                  │
+│                    │  ALERT PRIORITY  │                                  │
+│                    │     QUEUE        │                                  │
+│                    │  (Scored & Ranked)│                                  │
+│                    └────────┬────────┘                                  │
+│                             │                                           │
+└─────────────────────────────┼───────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      PERSONALIZATION & DELIVERY LAYER                   │
+│                                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐ │
+│  │ User Profile │  │ Portfolio    │  │ Notification │  │ Feedback    │ │
+│  │ Engine       │  │ Mapper       │  │ Router       │  │ Collector   │ │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └─────────────┘ │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## SECTION 2: AGENT SPECIFICATIONS
+
+### 2.1 Data Ingestion Agent
+
+**Purpose:** Continuous data collection and preprocessing
+
+**Data Sources to Integrate:**
+| Source | Data Type | Frequency | Priority |
+|--------|-----------|-----------|----------|
+| NSE Bhavcopy | EOD prices, volumes | Daily | Critical |
+| NSE Corporate Filings | Results, announcements, board meetings | Real-time | Critical |
+| BSE Announcements | Bulk deals, insider trading | Real-time | High |
+| SEBI Filings | IPO updates, regulatory changes | Hourly | High |
+| Economic Times API | News, analysis, expert views | Continuous | Medium |
+| Social Sentiment | Twitter/Reddit retail sentiment | Continuous | Low |
+
+**Processing Pipeline:**
+1. **Fetch** → Pull from source APIs/feeds
+2. **Validate** → Schema check, data quality flags
+3. **Enrich** → Add metadata (sector, market cap, historical context)
+4. **Store** → Time-series DB for prices, document store for filings
+5. **Event Detection** → Identify significant changes vs. historical baseline
+
+**Key Events to Flag:**
+- Earnings surprises (>10% vs. consensus)
+- Unusual volume spikes (>3x 20-day average)
+- Price gaps (>5% overnight)
+- Bulk deals (>1% of market cap)
+- Insider buying/selling clusters
+- Management commentary sentiment shifts
+- Regulatory filing anomalies
+
+---
+
+### 2.2 Pattern Recognition Agent
+
+**Purpose:** Detect technical patterns across NSE universe
+
+**Pattern Library:**
+
+| Pattern Category | Specific Patterns | Detection Method | Confidence Scoring |
+|------------------|-------------------|------------------|-------------------|
+| **Breakouts** | Resistance breakout, Channel breakout, Triangle breakout | Price level breach + volume confirmation | Volume ratio × price momentum |
+| **Reversals** | Head & Shoulders, Double Top/Bottom, Divergence | Pivot point analysis + indicator divergence | Pattern completion % + volume profile |
+| **Continuation** | Flag, Pennant, Cup & Handle | Consolidation detection + measured move | Time in pattern + volume contraction |
+| **Support/Resistance** | Key levels, Fibonacci retracements | Historical touch points clustering | Number of touches + recency |
+| **Candlestick** | Doji, Engulfing, Morning Star | Pattern matching algorithm | Body/wick ratios + context |
+
+**Technical Indicators to Calculate:**
+- Moving averages (20, 50, 200 EMA/SMA)
+- RSI (14-period)
+- MACD (12,26,9)
+- Bollinger Bands (20,2)
+- Volume-weighted average price (VWAP)
+- Average True Range (ATR) for volatility
+
+**Pattern Validation Framework:**
+1. **Historical Backtest** → How often did this pattern lead to expected move?
+2. **Success Rate by Stock** → Pattern reliability varies by volatility
+3. **Market Context** → Pattern strength in bull vs. bear markets
+4. **Sector Relative** → Pattern vs. sector index performance
+
+**Output Format for Each Detection:**
+```
+Pattern Alert:
+- Stock: [Symbol]
+- Pattern: [Name]
+- Timeframe: [Daily/Weekly]
+- Detection Confidence: [0-100%]
+- Historical Success Rate: [X% over N occurrences]
+- Expected Move: [Upside/Downside target]
+- Invalidation Level: [Stop loss]
+- Key Levels: [Support 1,2 / Resistance 1,2]
+- Volume Context: [Confirmation/Warning]
+```
+
+---
+
+### 2.3 Signal Synthesis Agent
+
+**Purpose:** Combine multiple weak signals into strong opportunities
+
+**Signal Categories:**
+
+| Signal Type | Weight | Source | Time Sensitivity |
+|-------------|--------|--------|------------------|
+| Earnings surprise | 25% | Filings + estimates comparison | Immediate |
+| Technical breakout | 20% | Pattern Recognition Agent | Same day |
+| Volume anomaly | 15% | Volume vs. historical | Same day |
+| Insider activity | 15% | SEBI filings | 24-48 hours |
+| News sentiment | 15% | NLP on news flow | Continuous |
+| Sector momentum | 10% | Relative strength | Weekly |
+
+**Scoring Algorithm:**
+- Each signal gets 0-100 score
+- Weighted average = composite opportunity score
+- Time decay factor (older signals lose weight)
+- Correlation penalty (redundant signals downweighted)
+
+**Opportunity Tiers:**
+| Score | Tier | Action | Delivery |
+|-------|------|--------|----------|
+| 85-100 | **STRONG BUY/SELL** | Immediate alert + detailed report | Push + SMS + Email |
+| 70-84 | **MODERATE** | Daily digest highlight | Push notification |
+| 55-69 | **WATCH** | Weekly watchlist addition | App notification |
+| <55 | **IGNORE** | Log only, no user alert | Internal tracking |
+
+**Confluence Detection:**
+- Multiple signals aligning = exponential score boost
+- Example: Earnings beat + Breakout + High volume = Score × 1.5
+
+---
+
+### 2.4 Explanation Agent
+
+**Purpose:** Transform raw signals into investor-friendly narratives
+
+**Explanation Framework:**
+
+**Structure for Each Alert:**
+1. **The Hook** (1 sentence): What happened and why it matters
+2. **The Evidence** (2-3 bullets): Specific data points supporting the call
+3. **The Context** (1 paragraph): How this fits broader market/sector trends
+4. **The Action** (Clear recommendation): What to consider doing
+5. **The Risk** (1 sentence): What could invalidate this signal
+
+**Personalization Dimensions:**
+| User Attribute | How to Personalize Explanation |
+|----------------|-------------------------------|
+| Experience Level | Beginners get more definitions, experts get technical depth |
+| Portfolio Holdings | Compare to existing positions, suggest hedges |
+| Risk Profile | Conservative users see lower-risk alternatives |
+| Past Behavior | Reference previous similar successful alerts |
+| Time Horizon | Day traders vs. long-term investors get different targets |
+
+**Tone Guidelines:**
+- Confident but not arrogant ("This pattern suggests..." not "This will...")
+- Educational ("RSI divergence means...")
+- Action-oriented (Specific price levels, not vague "consider buying")
+- Honest about limitations ("Success rate is 65%, not guaranteed")
+
+**Multi-Format Output:**
+- **Push Notification** (50 chars): "RELIANCE breakout alert +5% target"
+- **In-App Card** (200 words): Visual + key stats + quick action
+- **Detailed Report** (500+ words): Full analysis, charts, historical context
+- **Audio Brief** (60 seconds): For commute listening
+
+---
+
+### 2.5 Portfolio Context Agent
+
+**Purpose:** Filter and prioritize alerts based on user holdings
+
+**User Profile Dimensions:**
+- Current holdings (stocks, MFs, ETFs)
+- Sector allocation (% in IT, Banking, FMCG, etc.)
+- Cash position
+- Risk tolerance (Conservative/Moderate/Aggressive)
+- Investment horizon (Trading/Swing/Long-term)
+- Goals (Wealth preservation/Income/Growth/Speculation)
+
+**Relevance Scoring:**
+| Scenario | Relevance Score | Example |
+|----------|----------------|---------|
+| Alert on held stock | 100 | "Your HDFC Bank position showing breakout" |
+| Alert on same sector | 80 | "ICICI Bank breakout - compare to your HDFC" |
+| Alert on competitor | 70 | "TCS results beat - impact on your Infosys?" |
+| Alert on watchlist | 90 | "Stock you tracked hit target" |
+| Alert on unrelated | 30 | Generic market opportunities |
+
+**Smart Filtering Rules:**
+- Don't alert on stocks user sold in last 30 days (avoid FOMO)
+- Prioritize alerts that fill portfolio gaps (underweight sectors)
+- Warn on concentration risk (adding to already large position)
+- Suggest position sizing based on volatility
+
+---
+
+### 2.6 Feedback Loop Agent
+
+**Purpose:** Continuous improvement of signal quality
+
+**Metrics to Track:**
+| Metric | Definition | Target |
+|--------|------------|--------|
+| Alert-to-Action Rate | % of alerts where user took position | >15% |
+| Win Rate | % of alerts that reached target | >60% |
+| Average Return | Mean return on alert-followed | >5% |
+| Time to Target | Median days to reach expected move | <10 days |
+| User Satisfaction | Post-alert rating (1-5) | >4.0 |
+
+**Feedback Collection Points:**
+- Immediate: "Was this alert useful?" (Yes/No)
+- 7-day: "Did you act on this?" + outcome
+- 30-day: Full post-mortem on prediction accuracy
+
+**Model Improvement Loop:**
+1. Track actual vs. predicted outcomes
+2. Identify pattern types with declining accuracy
+3. Retrain detection thresholds quarterly
+4. A/B test explanation formats
+5. Personalize weights per user based on their success patterns
+
+---
+
+## SECTION 3: FEATURE MODULES
+
+### 3.1 Opportunity Radar Module
+
+**Core Function:** Continuous monitoring and alerting system
+
+**Alert Types:**
+
+| Alert Category | Trigger | Information Included |
+|----------------|---------|---------------------|
+| **Earnings Edge** | Results beat/miss consensus | Surprise %, segment performance, guidance change, peer comparison |
+| **Block Deal Buzz** | Bulk deal >₹10 crore | Buyer/seller identity, price vs. market, historical pattern of buyer |
+| **Insider Insight** | Promoter buying/selling | Transaction size, % of holding, 6-month trend, historical accuracy |
+| **Management Moves** | Conference call sentiment shift | Key phrase changes, tone analysis, guidance revision |
+| **Regulatory Radar** | SEBI/policy changes | Impact assessment, affected sectors, compliance deadlines |
+| **Global Gateway** | International market impact | Currency moves, commodity prices, FII flow correlation |
+
+**Alert Prioritization Logic:**
+1. User holdings first
+2. Watchlist second  
+3. High-confluence opportunities third
+4. Trending in retail community fourth
+
+**Delivery Mechanisms:**
+- Real-time push (critical alerts)
+- Morning briefing email (daily digest)
+- Evening wrap-up (what to watch tomorrow)
+- Weekly deep dive (top 5 opportunities)
+
+---
+
+### 3.2 Chart Pattern Intelligence Module
+
+**Core Function:** Visual pattern detection with educational overlay
+
+**User Experience Flow:**
+1. User searches/selects stock
+2. System displays chart with annotated patterns
+3. Click pattern → detailed explanation
+4. See historical success rate for this pattern on this stock
+5. Compare to sector/market pattern performance
+
+**Pattern Visualization Elements:**
+- Auto-drawn trendlines on price chart
+- Highlighted pattern boundaries
+- Volume bars colored by confirmation status
+- Target price projection lines
+- Stop-loss suggestion markers
+- Historical pattern occurrences (small thumbnails)
+
+**Educational Components:**
+- "Why this works" explanation per pattern
+- Video tutorial link for pattern type
+- Glossary for technical terms
+- Quiz to test understanding
+
+**Backtesting Display:**
+```
+Pattern: [Ascending Triangle]
+Detected on: [Date]
+This stock's history: 12 previous occurrences
+- Successful: 8 (67%)
+- Average gain: 14%
+- Average time to target: 8 days
+- Biggest winner: +32% (March 2024)
+- Biggest loser: -5% (June 2024)
+```
+
+---
+
+### 3.3 Market ChatGPT Module
+
+**Core Function:** Conversational AI for market queries
+
+**Query Categories:**
+
+| Category | Example Queries | Response Approach |
+|----------|----------------|-------------------|
+| **Stock Analysis** | "What do you think of TCS?" | Fundamental + technical snapshot |
+| **Pattern Explanation** | "What is RSI divergence?" | Definition + visual + current examples |
+| **Portfolio Review** | "How risky is my portfolio?" | Concentration analysis + correlation heatmap |
+| **Comparison** | "HDFC vs ICICI, which is better?" | Side-by-side metrics + relative strength |
+| **Scenario Planning** | "What if market drops 10%?" | Stress test on portfolio |
+| **Learning** | "Teach me about candlesticks" | Structured lesson with examples |
+
+**Context Awareness:**
+- Knows user's portfolio (don't recommend what they own)
+- Knows market regime (bull/bear/sideways)
+- Knows recent news (incorporate latest developments)
+- Knows user level (beginner vs. expert)
+
+**Source Citation:**
+- Every fact includes source link
+- "According to ET Markets data..."
+- "As per Q3 FY26 filing..."
+- Confidence score for each claim
+
+**Safety Guardrails:**
+- No guaranteed returns language
+- Risk warnings on every recommendation
+- "Not financial advice" disclaimer
+- No penny stock pumps
+- Flag conflicting information
+
+---
+
+### 3.4 AI Market Video Engine Module
+
+**Core Function:** Automated video generation from market data
+
+**Video Types:**
+
+| Type | Duration | Content | Update Frequency |
+|------|----------|---------|------------------|
+| **Market Wrap** | 60 sec | Nifty/Sensex moves, top gainers/losers, sector heatmap | Daily close |
+| **Stock Spotlight** | 90 sec | Deep dive on one high-activity stock | As triggered |
+| **IPO Tracker** | 60 sec | Subscription status, GMP, peer comparison | Daily during IPO |
+| **FII/DII Flow** | 45 sec | Institutional activity visualization | Weekly |
+| **Sector Rotation** | 60 sec | Money flow between sectors | Weekly |
+| **Pattern Alert** | 30 sec | Quick pattern explanation + stock | As detected |
+
+**Visual Elements:**
+- Animated price charts with drawing tools
+- Race charts for sector/market cap performance
+- Heatmaps (sector performance, FII activity)
+- Ticker-style data streams
+- AI avatar presenter (optional, can use text overlays)
+
+**Narration Script Structure:**
+1. Hook (5 sec): "Tata Motors broke out today..."
+2. Context (15 sec): "After 3 months of consolidation..."
+3. Data (20 sec): "Volume was 3x average, RSI at 65..."
+4. Implication (15 sec): "This pattern has 70% success rate..."
+5. CTA (5 sec): "Add to watchlist for updates..."
+
+---
+
+## SECTION 4: DATA MODELS
+
+### 4.1 Core Entities
+
+**Stock Entity:**
+- Symbol, Name, ISIN, Sector, Industry
+- Market cap category (Large/Mid/Small)
+- Index constituents (Nifty 50, Nifty 500, etc.)
+- Historical volatility metrics
+- Average daily volume
+- Institutional ownership %
+
+**Price Data Entity:**
+- Timestamp, Open, High, Low, Close, Volume
+- Adjusted for splits/bonus
+- 1-min, 5-min, Daily, Weekly aggregations
+
+**Pattern Detection Entity:**
+- Stock reference
+- Pattern type, subtype
+- Detection timestamp
+- Confidence score
+- Entry price, target price, stop loss
+- Historical success rate for this stock+pattern
+- Status (Active/Hit Target/Stopped Out/Expired)
+
+**Alert Entity:**
+- Alert ID, timestamp, type, priority
+- Related signals (filing + pattern + news)
+- Composite score
+- Personalized explanation text
+- User action taken (tracked)
+- Outcome (success/failure, return %)
+
+**User Entity:**
+- Demographics, experience level
+- Holdings (quantity, avg price, date)
+- Watchlist
+- Alert preferences (channels, frequency)
+- Interaction history
+- Feedback scores
+
+---
+
+## SECTION 5: USER INTERFACE DESIGN
+
+### 5.1 Dashboard Layout
+
+**Top Section (Priority Zone):**
+- Today's top 3 personalized alerts (cards)
+- Portfolio health score (0-100)
+- Market status (Nifty change, advance-decline ratio)
+
+**Middle Section (Discovery):**
+- Opportunity radar feed (scrollable list)
+- Filter tabs: All | My Stocks | Watchlist | Patterns | News
+
+**Bottom Section (Tools):**
+- Quick search bar
+- Portfolio upload button
+- ChatGPT assistant toggle
+- Video briefing play button
+
+### 5.2 Alert Card Design
+
+**Visual Hierarchy:**
+1. **Header**: Stock name + ticker + price change (color-coded)
+2. **Badge**: Alert type (Breakout/Earnings/Insider) + priority color
+3. **Main Message**: One-line actionable insight
+4. **Evidence Row**: 3 mini-stats (volume spike %, pattern success rate, sentiment)
+5. **Action Buttons**: "View Chart" | "Add to Watchlist" | "Mark as Read"
+6. **Expandable**: Full explanation + historical chart + similar past alerts
+
+### 5.3 Chart Page Layout
+
+**Left Panel (70%):**
+- Interactive candlestick chart
+- Drawing tools (trendlines, fibonacci)
+- Pattern overlay toggle
+- Timeframe selector (1D/1W/1M/3M/1Y)
+
+**Right Panel (30%):**
+- Current pattern detection status
+- Key statistics (RSI, MACD, volume)
+- Recent alerts for this stock
+- Peer comparison mini-charts
+
+---
+
+## SECTION 6: PROMPT ENGINEERING SPECIFICATIONS
+
+### 6.1 Explanation Agent Prompts
+
+**System Prompt Structure:**
+```
+ROLE: You are SmartStreet AI, a SEBI-registered research analyst assistant. 
+Your job is to explain market signals to retail investors clearly and honestly.
+
+TONE: Confident but cautious, educational, action-oriented
+CONSTRAINTS: 
+- Never guarantee returns
+- Always include risk warnings
+- Cite specific data points
+- Match explanation depth to user experience level [BEGINNER/INTERMEDIATE/EXPERT]
+
+CURRENT CONTEXT:
+- Market regime: [BULL/BEAR/SIDEWAYS]
+- User portfolio: [Holdings list]
+- User risk profile: [CONSERVATIVE/MODERATE/AGGRESSIVE]
+```
+
+**Pattern Explanation Prompt Template:**
+```
+INPUT:
+Stock: [SYMBOL]
+Pattern: [PATTERN_NAME]
+Detection Date: [DATE]
+Entry Price: [PRICE]
+Target: [TARGET]
+Stop Loss: [STOP]
+Confidence: [SCORE]%
+Historical Success: [SUCCESS_RATE]% over [N] occurrences
+Current Market Context: [BRIEF_MARKET_SUMMARY]
+User Experience Level: [LEVEL]
+
+OUTPUT REQUIREMENTS:
+1. One-sentence hook explaining what happened
+2. Three bullet points of specific evidence
+3. One paragraph on why this pattern works (educational)
+4. Clear action recommendation with price levels
+5. Risk warning specific to this setup
+6. Comparison to user's existing holdings (if relevant)
+
+FORMAT: Professional but conversational, no jargon without explanation
+LENGTH: 150-200 words for in-app, 50 words for push notification
+```
+
+### 6.2 Signal Synthesis Prompts
+
+**Confluence Analysis Prompt:**
+```
+INPUT SIGNALS:
+1. [SIGNAL_TYPE]: [DESCRIPTION] - Score: [X]/100
+2. [SIGNAL_TYPE]: [DESCRIPTION] - Score: [Y]/100
+3. [SIGNAL_TYPE]: [DESCRIPTION] - Score: [Z]/100
+
+STOCK CONTEXT:
+- Sector: [SECTOR]
+- Recent volatility: [HIGH/MEDIUM/LOW]
+- Institutional activity: [BUYING/SELLING/NEUTRAL]
+
+TASK:
+Analyze how these signals reinforce or contradict each other.
+Identify the strongest narrative.
+Flag any conflicting information.
+Recommend priority level (STRONG/MODERATE/WATCH/IGNORE).
+
+OUTPUT:
+- Synthesis narrative (2-3 sentences)
+- Confidence justification
+- Key risk factors
+- Suggested position sizing (FULL/HALF/QUARTER size)
+```
+
+### 6.3 ChatGPT Module Prompts
+
+**Query Classification Prompt:**
+```
+USER QUERY: "[QUERY]"
+
+CLASSIFY into:
+1. STOCK_ANALYSIS
+2. PATTERN_EXPLANATION  
+3. PORTFOLIO_REVIEW
+4. COMPARISON
+5. SCENARIO_PLANNING
+6. LEARNING
+7. MARKET_GENERAL
+8. OUT_OF_SCOPE
+
+Also extract:
+- Mentioned stock symbols
+- Time horizon implied
+- Experience level needed
+- Urgency (immediate answer vs. deep research)
+
+RESPOND with classification and extracted entities only.
+```
+
+**Response Generation Prompt:**
+```
+USER QUERY: "[QUERY]"
+CLASSIFICATION: [CATEGORY]
+USER CONTEXT: [PORTFOLIO_SUMMARY]
+MARKET CONTEXT: [TODAY'S_KEY_EVENTS]
+
+INSTRUCTIONS:
+If STOCK_ANALYSIS: Provide fundamental snapshot + technical view + recent news impact
+If PATTERN_EXPLANATION: Define concept + show current market example + visual description
+If PORTFOLIO_REVIEW: Analyze concentration, correlation, risk metrics, suggest rebalancing
+If COMPARISON: Side-by-side table of 5 key metrics + relative strength analysis
+If SCENARIO_PLANNING: Stress test numbers + historical parallels + hedging suggestions
+If LEARNING: Structured lesson with examples + quiz question at end
+If MARKET_GENERAL: Today's key events + sector performance + what to watch
+
+CONSTRAINTS:
+- Always cite sources for data
+- Include "Not financial advice" disclaimer
+- Suggest next 3 questions user might ask
+- Offer to create alert for discussed stock
+
+FORMAT: Markdown with headers, bullet points, and emojis for readability
+```
+
+---
+
+## SECTION 7: EVALUATION CRITERIA ALIGNMENT
+
+### 7.1 How This Meets Hackathon Requirements
+
+| Evaluation Focus | How This Project Delivers |
+|------------------|---------------------------|
+| **Full workflow automation** | 6-agent pipeline from data ingestion to personalized delivery, zero manual intervention for standard alerts |
+| **Multi-agent coordination** | Clear handoffs between Data → Pattern → Signal → Explanation → Personalization agents with defined contracts |
+| **Measurable reduction in cycle time** | Alerts generated within 5 minutes of signal detection vs. hours for manual research |
+| **Working compliance framework** | SEBI-appropriate disclaimers, no guaranteed returns, risk warnings, audit trail of all recommendations |
+
+### 7.2 Quantifiable Impact Model
+
+**Assumptions:**
+- ET Markets user base: 5 million active
+- Target adoption: 10% (500,000 users) in Year 1
+- Average portfolio size: ₹5 lakh
+- Current retail investor underperformance: -5% vs. index annually (due to poor timing)
+
+**Impact Calculations:**
+
+| Metric | Calculation | Annual Impact |
+|--------|-------------|---------------|
+| Time saved per user | 5 hours/week research × 500 ₹/hour value | ₹6,500 crore |
+| Improved returns | 3% better performance × ₹5L avg × 500K users | ₹750 crore wealth created |
+| Reduced losses | Stop-loss discipline saves 2% on 20% of portfolios | ₹100 crore losses avoided |
+| Trading efficiency | Better entry/exit timing saves 0.5% transaction costs | ₹125 crore saved |
+
+**Total Addressable Value: ₹7,475 crore annually**
+
+---
+
+## SECTION 8: IMPLEMENTATION ROADMAP
+
+### Phase 1: MVP (Hackathon Demo)
+**Focus:** Opportunity Radar + 3 Pattern Types + Basic Chat
+
+**Week 1:**
+- Set up data pipeline (mock data)
+- Build Pattern Recognition Agent (Support/Resistance, Breakout, RSI Divergence)
+- Create basic alert generation
+- Build simple dashboard
+
+**Week 2:**
+- Integrate Explanation Agent
+- Add user portfolio context
+- Create 3-minute demo video
+- Write architecture document
+
+### Phase 2: Beta (Post-Hackathon)
+- Real-time data feeds
+- Expand pattern library to 15+ patterns
+- Mobile app
+- Backtesting engine
+
+### Phase 3: Scale
+- ML model training on user feedback
+- Broker API integration for execution
+- Social features (verified trader following)
+- Institutional product tier
+
+---
+
+## SECTION 9: RISK MITIGATION
+
+| Risk | Mitigation Strategy |
+|------|---------------------|
+| False signals damage credibility | Confidence thresholds, historical backtesting, gradual rollout |
+| Regulatory compliance | Legal review, SEBI registration consultation, conservative language |
+| Data quality issues | Multiple source validation, anomaly detection, manual override |
+| User overtrading | Position sizing guidance, risk warnings, "cooling off" periods |
+| Model drift | Continuous monitoring, quarterly retraining, A/B testing |
+
+---
+
+## SECTION 10: SUCCESS METRICS FOR DEMO
+
+**Live Demo Checklist:**
+- [ ] Show 5 real (or realistic mock) stocks with detected patterns
+- [ ] Demonstrate one earnings surprise alert with full explanation
+- [ ] Show portfolio context filtering (alerts relevant to specific holdings)
+- [ ] Display historical success rate for a pattern
+- [ ] Generate one AI explanation in real-time
+- [ ] Show chat interface answering a complex query
+- [ ] Demonstrate feedback collection mechanism
+
+**Killer Demo Moment:**
+"Yesterday, our system detected a breakout pattern in [STOCK] at 10:15 AM. Here's what happened next..." [Show price chart with successful move]
+
+---
+
+This blueprint gives you everything needed to implement without writing code. Each section can be handed to a specialized developer (frontend, backend, ML, DevOps) for parallel execution.
+
+**Which module do you want me to expand further?**
